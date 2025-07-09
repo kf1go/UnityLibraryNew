@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [DefaultExecutionOrder(-300)]
-internal class __DEBUG_TWEENCOUNTER : MonoBehaviour
+internal class DEBUG_TWEENCOUNTER : MonoBehaviour
 {
     private void Update()
     {
