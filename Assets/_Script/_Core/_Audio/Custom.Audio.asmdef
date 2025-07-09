@@ -1,0 +1,17 @@
+{
+    "name": "Custom.Audio",
+    "rootNamespace": "Custom.Audio",
+    "references": [
+        "GUID:688464813dd58194380db6b45b318673",
+        "GUID:6082bb7c6a5d3884e9b1fcf442c83d67"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
