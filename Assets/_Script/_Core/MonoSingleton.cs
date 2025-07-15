@@ -2,19 +2,20 @@ using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(-100)]
-public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
+public abstract class MonoSingleton<T> : MonoBehaviour 
+    where T : MonoSingleton<T>
 {
     protected virtual MonoSingletonFlags SingletonFlag { get; } // consider using attribute to get flags from static scope
     private static T _instance = null;
 
-    private static bool IsShuttingDown { get; set; }
+    private static bool IsPlayerClosing { get; set; }
     public static T Instance
     {
         get
         {
             if (System.Object.ReferenceEquals(_instance, null)) //using C# null check
             {
-                if (IsShuttingDown)
+                if (IsPlayerClosing)
                 {
                     return null;
                 }
@@ -81,6 +82,6 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
     }
     protected virtual void OnApplicationQuit()
     {
-        IsShuttingDown = true;
+        IsPlayerClosing = true;
     }
 }
