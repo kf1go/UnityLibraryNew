@@ -8,7 +8,6 @@ namespace Custom.Audio
     [CreateAssetMenu(fileName = "AudioSO", menuName = "SO/Audio/AudioSO")]
     public class AudioSO : BaseAudioSO
     {
-
         [Header("General")]
         public AudioClip clip;
         public AudioMixerGroup audioMixerGroup;

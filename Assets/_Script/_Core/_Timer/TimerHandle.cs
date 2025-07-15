@@ -21,7 +21,11 @@ public class TimerHandle<T> : TimerHandleBase
     internal TimerHandle(T target, float duration)
         : base(target, duration)
     {
-        if (target == null) throw new ArgumentNullException($"{target} is null");
+        if (target == null)
+        {
+            throw new ArgumentNullException($"{target} is null");
+        }
+
         this.target = target;
     }
     internal override void Update()

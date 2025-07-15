@@ -8,7 +8,7 @@ using UnityEngine.PlayerLoop;
 public static class CustomPlayerLoop
 {
     /// <summary>
-    /// automatically handles customLoop subscribe, desubscribe
+    /// automatically handles customLoop subscribe, unsubscribe
     /// </summary>
     /// <param name="insertTarget">target type to insert into such as <see cref="Update"/></param>
     /// <param name="customLoopSystem">loop to insert</param>
@@ -39,7 +39,7 @@ public static class CustomPlayerLoop
     }
     public static void PrintPlayerLoop(PlayerLoopSystem rootLoop)
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(16);
         sb.AppendLine("Unity Player Loop");
 
         foreach (PlayerLoopSystem subSystem in rootLoop.subSystemList)
@@ -79,7 +79,6 @@ public static class CustomPlayerLoop
         if (!flagSuccessful)
         {
             Debug.LogError($"{targetLoopType} insert failed");
-            return;
         }
 
         return;
@@ -93,7 +92,9 @@ public static class CustomPlayerLoop
                 for (int i = 0; i < subSystemListLength; i++)
                 {
                     if (InitializeTargetLoopRecursive(ref loop.subSystemList[i], loopToInsert, indexInsert, targetLoopType))
+                    {
                         return true;
+                    }
                 }
                 return false;
             }
@@ -142,4 +143,5 @@ public static class CustomPlayerLoop
             return true;
         }
     }
+
 }

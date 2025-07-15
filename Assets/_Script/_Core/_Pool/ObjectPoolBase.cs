@@ -46,7 +46,7 @@ namespace Custom.Pool
             bool collision = collisionHashSet.Contains(instance);
             if (collision)
             {
-                throw new ArgumentException($"Collision Detected. prefab : {instance}, {typeof(T)}_POOL");
+                throw new ArgumentException($"Collision Detected. prefab : {instance}, {typeof(T)}_pool");
             }
 
             collisionHashSet.Add(instance);

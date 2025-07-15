@@ -36,11 +36,6 @@ namespace Custom.Pool
         public UnityObjectPool(T prefab, int initialPoolCapacity = 10, int maxCapacity = 1000) : base(initialPoolCapacity, maxCapacity)
         {
             this.prefab = prefab;
-
-            //for (int i = 0; i < preCreate; i++)
-            //{
-            //    Push(Create());
-            //}
         }
         protected override T Create()
         {

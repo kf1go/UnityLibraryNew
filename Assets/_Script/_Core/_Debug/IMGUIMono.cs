@@ -43,7 +43,10 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
         //uncomment all to use matrix based scaling
         //this allows to scale images correctly
 
-        if (!EnableGUI) return;
+        if (!EnableGUI)
+        {
+            return;
+        }
 
         //Matrix4x4 originalGUIMatrix = GUI.matrix;
 
@@ -130,14 +133,20 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
     }
     public static void DebugTextWorld(DebugInfo debugWorldInfo, DebugKey key = DebugKey.DefaultFlag)
     {
-        if (!IsDebugAvailable(key)) return;
+        if (!IsDebugAvailable(key))
+        {
+            return;
+        }
 
         debugWorldInfo.is3D = true;
         debugInfoList.Add(debugWorldInfo);
     }
     public static void DebugTextWorld<T>(Vector3 worldPosition, T target, float sizeRatio = 1, DebugKey key = DebugKey.DefaultFlag)
     {
-        if (!IsDebugAvailable(key)) return;
+        if (!IsDebugAvailable(key))
+        {
+            return;
+        }
 
         DebugInfo debugWorldInfo = new DebugInfo(target.ToString(), sizeRatio, worldPosition, true);
         debugInfoList.Add(debugWorldInfo);
