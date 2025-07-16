@@ -13,7 +13,6 @@ public static class TimerRunner
     {
         //private readonly static LinkedList<TimerHandleBase> timersLinkedList = new LinkedList<TimerHandleBase>();
         private readonly static List<TimerHandleBase> timers = new List<TimerHandleBase>(16);
-        internal static IReadOnlyList<TimerHandleBase> GetTimers => timers;// TODO : DEBUG PURPSOE ONLY, REMOVEME
         internal static void AddTimer(TimerHandleBase timerHandle)
         {
             timers.Add(timerHandle);

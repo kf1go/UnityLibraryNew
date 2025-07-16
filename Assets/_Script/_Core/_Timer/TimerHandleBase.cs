@@ -43,7 +43,7 @@ public abstract class TimerHandleBase
             return;
         }
 
-        bool targetDestroyed = target == null; //todo : this is expensive
+        bool targetDestroyed = target == null;
         bool isTimeOut = Time.time > EndTime;
 
         if (isTimeOut)
