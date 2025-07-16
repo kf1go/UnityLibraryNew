@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Custom.Pool
 {
@@ -11,13 +12,15 @@ namespace Custom.Pool
 #endif
 
         private readonly int maxCapacity;
-        protected readonly List<T> poolList;
-        public IReadOnlyList<T> GetList => poolList;
+        protected readonly Stack<T> poolStack;
+#if UNITY_EDITOR
+        protected AntiClosureAction<ObjectPoolBase<T>, int> OnPoolMaxCapacityReached;
+#endif
 
-        public ObjectPoolBase(int initialPoolCapacity = 10, int maxCapacity = 1000)
+        public ObjectPoolBase(int initialPoolCapacity = 16, int maxCapacity = 1000)
         {
             this.maxCapacity = maxCapacity;
-            poolList = new List<T>(initialPoolCapacity);
+            poolStack = new Stack<T>(initialPoolCapacity);
 #if UNITY_EDITOR
             collisionHashSet = new HashSet<T>(initialPoolCapacity);
 #endif
@@ -25,15 +28,13 @@ namespace Custom.Pool
         public virtual T Pop()
         {
             T result;
-            int lastIndex = poolList.Count - 1;
-            if (lastIndex == -1)
+            if (poolStack.Count == 0)
             {
                 result = Create();
             }
             else
             {
-                result = poolList[lastIndex];
-                poolList.RemoveAt(lastIndex);
+                result = poolStack.Pop();
 #if UNITY_EDITOR
                 collisionHashSet.Remove(result);
 #endif
@@ -42,6 +43,8 @@ namespace Custom.Pool
         }
         public virtual void Push(T instance)
         {
+            Debug.Assert(instance != null);
+
 #if UNITY_EDITOR
             bool collision = collisionHashSet.Contains(instance);
             if (collision)
@@ -51,21 +54,29 @@ namespace Custom.Pool
 
             collisionHashSet.Add(instance);
 #endif
-            if (poolList.Count < maxCapacity)
+            if (poolStack.Count < maxCapacity)
             {
-                poolList.Add(instance);
+                poolStack.Push(instance);
             }
             else
+            {
+#if UNITY_EDITOR
+                if (OnPoolMaxCapacityReached.HasValue) 
+                {
+                    OnPoolMaxCapacityReached.Fire(maxCapacity);
+                }
+#endif
                 Destroy(instance);
+            }
         }
-        protected abstract T Create();
-        protected abstract void Destroy(T instance);
         public virtual void Clear()
         {
-            poolList.Clear();
+            poolStack.Clear();
 #if UNITY_EDITOR
             collisionHashSet.Clear();
 #endif
         }
+        protected abstract T Create();
+        protected abstract void Destroy(T instance);
     }
 }

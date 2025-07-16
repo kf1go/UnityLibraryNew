@@ -4,15 +4,15 @@ namespace Custom.Pool
 {
     public abstract class BasePoolObjectSO : ScriptableObject
     {
-        [SerializeField] private int preCreateAmount;
-        [SerializeField] protected GameObject prefab;
-        [SerializeField] private int hash;
-        public int GetPreCreate => preCreateAmount;
-        public GameObject GetPrefab => prefab;
-        public int GetHash => hash;
+        [field: SerializeField] public int PrewarmCount { get; private set; } // TODO : not used
+        [field: SerializeField] public int InitialPoolCapacity { get; private set; } = 16;
+        [field: SerializeField] public int MaxCapacity { get; private set; } = 1000;
+
+        [field: SerializeField] public GameObject Prefab { get ; private set; }
+        [field: SerializeField] public int Hash { get; private set; } //serialized for data saving, readonly
         protected virtual void OnValidate()
         {
-            hash = prefab.GetHashCode();
+            Hash = Prefab.GetHashCode(); // TODO : is this fine?
         }
     }
 }

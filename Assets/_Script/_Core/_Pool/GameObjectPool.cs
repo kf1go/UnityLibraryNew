@@ -4,7 +4,7 @@ namespace Custom.Pool
 {
     internal class GameObjectPool : UnityObjectPool<GameObject>
     {
-        public GameObjectPool(GameObject prefab, int initialPoolCapacity = 10, int maxCapacity = 1000)
+        public GameObjectPool(GameObject prefab, int initialPoolCapacity = 16, int maxCapacity = 1000)
             : base(prefab, initialPoolCapacity, maxCapacity)
         {
             UnityObjectPool.SceneChangePoolDestroyEvent += base.Clear;
@@ -36,7 +36,7 @@ namespace Custom.Pool
         }
         public override void Clear()
         {
-            foreach (GameObject item in poolList)
+            foreach (GameObject item in poolStack)
             {
                 Object.Destroy(item);
             }

@@ -6,62 +6,66 @@ namespace Custom.Pool
     public static class GameObjectPoolManager
     {
         private readonly static Dictionary<int, GameObjectPool> gameObjectPoolDictionary;
-        private const int DICTIONARY_CAPACITIY = 10;//todo : get prefab count from so
+        private const int k_DictionaryCapacitiy = 10; // TODO
         static GameObjectPoolManager()
         {
-            gameObjectPoolDictionary = new Dictionary<int, GameObjectPool>(DICTIONARY_CAPACITIY);
+            gameObjectPoolDictionary = new Dictionary<int, GameObjectPool>(k_DictionaryCapacitiy);
         }
-        private static GameObjectPool CreateDictionary(PoolGameObjectSO prefabSO)
+        public static void InitializePool(PoolGameObjectSO prefabSO)
         {
-            GameObjectPool result = new GameObjectPool(prefabSO.GetPrefab);//, preCreate: prefabSO.GetPreCreate);
-            gameObjectPoolDictionary.Add(prefabSO.GetHash, result);
-            return result;
-        }
-        public static void Initialize(PoolGameObjectSO prefabSO)
-        {
-            int hash = prefabSO.GetHash;
-            GameObject prefab = prefabSO.GetPrefab;
+            int hash = prefabSO.Hash;
+            GameObject prefab = prefabSO.Prefab;
 
-#if UNITY_EDITOR
-            bool collisionCheckPoolMap = !gameObjectPoolDictionary.ContainsKey(prefabSO.GetHash);
-            if (!collisionCheckPoolMap)
-            {
-                Debug.LogError($"Trying to add a key that has been added to the dictionary. {prefab.name}{hash}");
-                return;
-            }
-#endif
-
-            CreateDictionary(prefabSO);
+            GameObjectPool result = new GameObjectPool(prefabSO.Prefab, prefabSO.InitialPoolCapacity, prefabSO.MaxCapacity);
+            gameObjectPoolDictionary.Add(prefabSO.Hash, result);
         }
         public static GameObject Pop(PoolGameObjectSO prefabSO)
         {
-            GameObject result;
-            if (gameObjectPoolDictionary.TryGetValue(prefabSO.GetHash, out GameObjectPool value))
-                result = value.Pop();
-            else
-            {
-                Debug.LogWarning("runtimeInitializing! call func:Initialize before calling this");
-                GameObjectPool gameObjectPool = CreateDictionary(prefabSO);
-                result = gameObjectPool.Pop();
-            }
+            Debug.Assert(prefabSO != null);
+
+            int hash = prefabSO.Hash;
+            GameObjectPool pool = gameObjectPoolDictionary[hash];
+            Debug.Assert(pool != null);
+
+            GameObject result = pool.Pop();
+            //if (gameObjectPoolDictionary.TryGetValue(prefabSO.Hash, out GameObjectPool value))
+            //{
+            //    result = value.Pop();
+            //}
+            //else
+            //{
+            //    Debug.LogWarning("runtimeInitializing! call func:Initialize before calling this");
+            //    GameObjectPool gameObjectPool = CreateDictionary(prefabSO);
+            //    result = gameObjectPool.Pop();
+            //}
             return result;
         }
         public static void Push(PoolGameObjectSO prefabSO, GameObject instance)
         {
+            Debug.Assert(prefabSO != null);
             Debug.Assert(instance != null, "local: push instance is null");
 
-            if (gameObjectPoolDictionary.TryGetValue(prefabSO.GetHash, out GameObjectPool value))
-                value.Push(instance);
-            else
-            {
-                Debug.LogWarning("runtimeInitializing! call func:Initialize before calling this");
-                GameObjectPool gameObjectPool = CreateDictionary(prefabSO);
-                gameObjectPool.Push(instance);
-            }
+            int hash = prefabSO.Hash;
+            GameObjectPool pool = gameObjectPoolDictionary[hash];
+            Debug.Assert(pool != null);
+
+            pool.Push(instance);
+
+            //if (gameObjectPoolDictionary.TryGetValue(prefabSO.Hash, out GameObjectPool value))
+            //{
+            //    value.Push(instance);
+            //}
+            //else
+            //{
+            //    Debug.LogWarning("runtimeInitializing! call func:Initialize before calling this");
+            //    GameObjectPool gameObjectPool = CreateDictionary(prefabSO);
+            //    gameObjectPool.Push(instance);
+            //}
         }
         public static void Clear(PoolGameObjectSO prefabSO)
         {
-            gameObjectPoolDictionary[prefabSO.GetHash].Clear();
+            Debug.Assert(prefabSO != null);
+            gameObjectPoolDictionary[prefabSO.Hash].Clear();
         }
         public static void ClearAll()
         {

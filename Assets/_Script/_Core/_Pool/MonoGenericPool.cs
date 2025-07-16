@@ -12,17 +12,22 @@ namespace Custom.Pool
         /// </summary>
         public static void Initialize(PoolMonoBehaviourSO prefabSO)
         {
-            bool isMonoPoolInitialized = monoPool != null;
-            if (isMonoPoolInitialized)
+            Debug.Assert(prefabSO != null);
+
+            if (monoPool != null)
             {
-                //Debug.LogError($"field:monoPool is already initialized. {prefabSO.name}");
+#if UNITY_EDITOR
+                Debug.LogError($"monoPool is already initialized. {prefabSO.name}");
+#endif
                 return;
             }
             
-            T prefab = prefabSO.GetMono as T;
-            monoPool = new MonoPool<T>(prefab);//, preCreate: prefabSO.GetPreCreate);
+            T prefab = (T)prefabSO.GetMono;
+            monoPool = new MonoPool<T>(prefab, prefabSO.InitialPoolCapacity, prefabSO.MaxCapacity);
 
-            Debug.Assert(prefab != null, $"failed to cast Mono to T. {prefabSO.name}");
+#if UNITY_EDITOR
+            Debug.Assert(prefab != null, $"failed to cast Mono to T. {prefabSO.name}", prefabSO);
+#endif
         }
         public static T Pop()
         {
@@ -30,7 +35,10 @@ namespace Custom.Pool
         }
         public static void Push(T instance)
         {
-            if (instance == null) throw new ArgumentNullException("push instance is null");
+            if (instance == null)
+            {
+                throw new ArgumentNullException("push instance is null");
+            }
             monoPool.Push(instance);
         }
         public static void Clear()

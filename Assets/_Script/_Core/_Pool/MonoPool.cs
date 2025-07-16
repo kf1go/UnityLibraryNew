@@ -6,7 +6,7 @@ namespace Custom.Pool
     internal class MonoPool<T> : UnityObjectPool<T>
         where T : MonoBehaviour, IPoolable
     {
-        public MonoPool(T prefab, int initialPoolCapacity = 100, int maxCapacity = 1000) 
+        public MonoPool(T prefab, int initialPoolCapacity = 16, int maxCapacity = 1000) 
             : base(prefab, initialPoolCapacity, maxCapacity)
         {
             UnityObjectPool.SceneChangePoolDestroyEvent += base.Clear;
@@ -53,7 +53,7 @@ namespace Custom.Pool
         }
         public override void Clear()
         {
-            foreach (T item in poolList)
+            foreach (T item in poolStack)
             {
                 Object.Destroy(item.gameObject);
             }   

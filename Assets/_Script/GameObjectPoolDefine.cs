@@ -55,7 +55,7 @@ public class GameObjectPoolDefine : MonoSingleton<GameObjectPoolDefine>
     }
     private static PoolGameObjectSO InitPool(PoolGameObjectSO poolGameObjectSO)
     {
-        GameObjectPoolManager.Initialize(poolGameObjectSO);
+        GameObjectPoolManager.InitializePool(poolGameObjectSO);
         return poolGameObjectSO;
     }
 }

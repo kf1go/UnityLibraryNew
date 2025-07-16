@@ -1,7 +1,9 @@
 {
     "name": "Custom.Pool",
     "rootNamespace": "Custom.Pool",
-    "references": [],
+    "references": [
+        "GUID:6082bb7c6a5d3884e9b1fcf442c83d67"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

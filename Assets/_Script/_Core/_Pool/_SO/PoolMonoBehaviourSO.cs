@@ -12,7 +12,7 @@ namespace Custom.Pool
             base.OnValidate();
             if (mono != null)
             {
-                if (mono.gameObject != prefab)
+                if (mono.gameObject != Prefab)
                 {
                     mono = null;
                     Debug.LogError($"Mono and prefab GameObject are different. {name}");
