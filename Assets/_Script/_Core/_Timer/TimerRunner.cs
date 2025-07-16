@@ -11,7 +11,6 @@ public static class TimerRunner
 {
     internal static class TimerUpdate
     {
-        //private readonly static LinkedList<TimerHandleBase> timersLinkedList = new LinkedList<TimerHandleBase>();
         private readonly static List<TimerHandleBase> timers = new List<TimerHandleBase>(16);
         internal static void AddTimer(TimerHandleBase timerHandle)
         {
