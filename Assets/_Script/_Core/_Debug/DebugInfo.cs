@@ -1,27 +1,21 @@
+using System;
 using UnityEngine;
 
 public struct DebugInfo
 {
-    // TODO : capsulation needed, change constructor
-    internal Vector3 worldPosition;
-    internal bool is3D;
+    public bool Is3D => worldPosition.HasValue;
+    public Nullable<Vector3> worldPosition;
     public string message;
-    public float sizeRatio;
 
-    public DebugInfo(string message, float sizeRatio = 1, Vector3 worldPosition = default)
-        : this(message, sizeRatio, worldPosition, false)
-    {
-    }
-    internal DebugInfo(string message, float sizeRatio = 1, Vector3 worldPosition = default, bool is3D = false)
+    public DebugInfo(string message, Nullable<Vector3> worldPosition = null)
     {
         this.worldPosition = worldPosition;
         this.message = message;
-        this.sizeRatio = sizeRatio;
-        this.is3D = is3D;
     }
     public readonly Vector3 GetScreenPos(Camera camera)
     {
-        Vector3 result = camera.WorldToScreenPoint(worldPosition, Camera.MonoOrStereoscopicEye.Mono);
+        Debug.Assert(worldPosition.HasValue, "world position is null");
+        Vector3 result = camera.WorldToScreenPoint(worldPosition.Value, Camera.MonoOrStereoscopicEye.Mono);
         return result;
     }
 }

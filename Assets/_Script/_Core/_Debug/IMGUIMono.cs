@@ -12,11 +12,10 @@ public enum DebugKey
     Temp4 = 1 << 3,
     Temp5 = 1 << 4
 }
-
 /// <summary>
-/// note : calling methods before update functino call won't work because update is clearing collection of DebugInfo
+/// NOTE : this script must be executed before any other scripts to prevent the Debuginfo collection from being cleared after Debuginfo has been added
 /// </summary>
-[DefaultExecutionOrder(-1000)]// NOTE : this script must be excuted before any other scripts
+[DefaultExecutionOrder(-2000)]
 public class IMGUIMono : MonoSingleton<IMGUIMono>
 {
     // TOOD : remove monoBehaviour dependnecy and use RuntimeInitializeLoadType.AfterAssembliesLoaded ?
@@ -40,8 +39,8 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
     }
     private void OnGUI()
     {
-        //uncomment all to use matrix based scaling
-        //this allows to scale images correctly
+        // uncomment all to use matrix based scaling
+        // Matrix-based scaling does proper ImGui scaling
 
         if (!EnableGUI)
         {
@@ -76,7 +75,7 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
         for (int i = 0; i < infoListCount; i++)
         {
             DebugInfo item = debugInfoList[i];
-            int ratioAppliedFontSize = (int)(item.sizeRatio * fontSize);
+            int ratioAppliedFontSize = fontSize;
             debugGuiSkin.label.fontSize = ratioAppliedFontSize;
             debugGuiSkin.box.fontSize = ratioAppliedFontSize;
 
@@ -85,9 +84,9 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
             Vector2 size;
             string message = item.message;
             size = new Vector3((int)(item.message.Length * fontSize * 0.61f), fontSize);
-            if (item.is3D) //iterate World Text
+            if (item.Is3D) //iterate World Text
             {
-                screenPosition = camera.WorldToScreenPoint(item.worldPosition, Camera.MonoOrStereoscopicEye.Mono);
+                screenPosition = item.GetScreenPos(camera);
                 screenPosition.y = screenHeight - screenPosition.y;
 
                 /*screenPosition.x /= fontSize;
@@ -109,7 +108,7 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
             }
         }
 
-        //endl, set original GUI matrix
+        //set original GUI matrix
         //GUI.matrix = originalGUIMatrix;
     }
     public static void DebugText(DebugInfo debugInfo, DebugKey key = DebugKey.DefaultFlag)
@@ -120,36 +119,6 @@ public class IMGUIMono : MonoSingleton<IMGUIMono>
         }
 
         debugInfoList.Add(debugInfo);
-    }
-    public static void DebugText<T>(T target, float sizeRatio = 1, DebugKey key = DebugKey.DefaultFlag)
-    {
-        if (!IsDebugAvailable(key))
-        {
-            return;
-        }
-
-        DebugInfo debugInfo = new DebugInfo(target.ToString(), sizeRatio, is3D: false);
-        debugInfoList.Add(debugInfo);
-    }
-    public static void DebugTextWorld(DebugInfo debugWorldInfo, DebugKey key = DebugKey.DefaultFlag)
-    {
-        if (!IsDebugAvailable(key))
-        {
-            return;
-        }
-
-        debugWorldInfo.is3D = true;
-        debugInfoList.Add(debugWorldInfo);
-    }
-    public static void DebugTextWorld<T>(Vector3 worldPosition, T target, float sizeRatio = 1, DebugKey key = DebugKey.DefaultFlag)
-    {
-        if (!IsDebugAvailable(key))
-        {
-            return;
-        }
-
-        DebugInfo debugWorldInfo = new DebugInfo(target.ToString(), sizeRatio, worldPosition, true);
-        debugInfoList.Add(debugWorldInfo);
     }
     internal static bool IsDebugAvailable(DebugKey key)
     {
