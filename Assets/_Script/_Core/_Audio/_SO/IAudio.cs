@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Custom.Audio
 {
-    public abstract class BaseAudioSO : ScriptableObject
+    public interface IAudio
     {
         public abstract AudioSO GetAudio();
     }

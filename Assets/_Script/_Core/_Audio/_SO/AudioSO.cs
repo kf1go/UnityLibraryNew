@@ -6,37 +6,44 @@ namespace Custom.Audio
 {
 
     [CreateAssetMenu(fileName = "AudioSO", menuName = "SO/Audio/AudioSO")]
-    public class AudioSO : BaseAudioSO
+    public class AudioSO : ScriptableObject, IAudio
     {
         [Header("General")]
-        public AudioClip clip;
-        public AudioMixerGroup audioMixerGroup;
-        public bool loop;
-        public bool enableMaxCount = true;
-        public int maxCount = 5;
+        [field: SerializeField] public AudioClip Clip { get; private set; }
+        [field: SerializeField] public AudioMixerGroup AudioMixerGroup { get; private set; }
+        [field: SerializeField] public bool IsLoop { get; private set; }
+        [field: SerializeField] public bool EnableMaxCount { get; private set; }
+        [field: SerializeField] public int MaxCount { get; private set; } = 1;
+        [field: SerializeField] public int Hash { get; private set; }
 
-        [Header("Global Values, StartValue")]
-        [field: Range(0, 256)]     [field: SerializeField] public int Priority { get; private set; } = 128;
-        [field: Range(0, 1)]       [field: SerializeField] public float Volume { get; private set; } = 1;
-        [field: Range(-3, 3)]      [field: SerializeField] public float Pitch { get; private set; } = 1;
-        [field: Range(-1, 1)]      [field: SerializeField] public float StreoPan { get; private set; } = 0;
-        [field: SerializeField]                            private bool is3D = true;   // this was float but i changed it to bool. (do we need 2.5D?
-        [field: Range(0, 1.1f)]    [field: SerializeField] public float ReverbZoneMix { get; private set; } = 1;
-        [field: Range(0, 5)]       [field: SerializeField] public float DopplerLevel { get; private set; } = 0;
+        [field: SerializeField, Range(0, 256)] public int Priority { get; private set; } = 128;
+        [field: SerializeField, Range(0, 1)] public float Volume { get; private set; } = 1;
+        [field: SerializeField, Range(-3, 3)] public float Pitch { get; private set; } = 1;
+        [field: SerializeField, Range(-1, 1)] public float StreoPan { get; private set; } = 0;
+        [field: SerializeField] private bool is3D = true;
+        [field: SerializeField, Range(0, 1.1f)] public float ReverbZoneMix { get; private set; } = 1;
+        [field: SerializeField, Range(0, 5)] public float DopplerLevel { get; private set; } = 0;
 
         [Header("3D Sound Settings")]
-        [Range(0, 360)]     public int spread;
-
-        [Range(0, 1000)]    public int minDistance = 1;
-        [Range(1.01f, 1000)] public int maxDistance = 500;
-        public AudioRolloffMode audioRolloffMode = AudioRolloffMode.Linear;
-        [HideInInspector]   public AnimationCurve curve = AnimationCurve.Linear(0, 1, 1, 0);
+        [field: SerializeField, Range(0, 360)] public int Spread { get; private set; }
+        [field: SerializeField, Range(0, 1000)] public int MinDistance { get; private set; } = 1;
+        [field: SerializeField, Range(1.01f, 1000)] public int MaxDistance { get; private set; } = 500;
+        [field: SerializeField] public AudioRolloffMode AudioRolloffMode { get; private set; } = AudioRolloffMode.Linear;
+        [field: SerializeField] public AnimationCurve RollOffCurve { get; private set; } = AnimationCurve.Linear(0, 1, 1, 0);
 
         public float GetSpatialBlend => is3D ? 1 : 0;
 
-        public override AudioSO GetAudio()
+        public AudioSO GetAudio()
         {
             return this;
+        }
+        AudioSO IAudio.GetAudio()
+        {
+            return GetAudio();
+        }
+        private void OnValidate()
+        {
+            Hash = GetHashCode();
         }
     }
 }

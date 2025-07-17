@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Custom.Audio
 {
     [CreateAssetMenu(fileName = "AudioSOSet", menuName = "SO/AudioSOSet")]
-    public class AudioSOSet : BaseAudioSO
+    public class AudioSOSet : ScriptableObject, IAudio
     {
         [SerializeField] private AudioCollectionSO[] audioCollections;
-        public override AudioSO GetAudio()
+        AudioSO IAudio.GetAudio()
         {
-            throw new NotSupportedException();
+            int randomIndex = Random.Range(0, audioCollections.Length);
+            return audioCollections[randomIndex].GetRandomAudio;
         }
     }
 }

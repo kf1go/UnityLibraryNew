@@ -8,101 +8,109 @@ namespace Custom.Audio
 {
     public class AudioEmitter : MonoBehaviour, IPoolable
     {
-        private static readonly Dictionary<int, int> audioDictionary = new Dictionary<int, int>(0);//new Dictionary<int, int>(20); // TODO : constructor
-
-        public event Action OnEndCallback;
+        private static readonly Dictionary<int, int> audioPlayCount = new Dictionary<int, int>(16);
+        private const string k_playWithoutInit = "playing without init";
+        private const string k_instanceIsInPool = "audio emitter is already in pool";
+        public event Action OnAudioPlayEnd;
 
         [Header("Preplace")]
-        [SerializeField] private BaseAudioSO defaultAudioSO;
+        [SerializeField] private AudioSO defaultAudioSO;
         [SerializeField] private bool overrideVolume;
-        private bool isPrePlaced = true;
+        private bool IsPrePlaced => defaultAudioSO != null;
+        public bool IsPlaying => audioSource.isPlaying;
 
         [Header("General")]
         private AudioSource audioSource;
         private AudioSO currentAudioSO;
 
         private bool IsInitialized => currentAudioSO != null;
-        private bool isInPool;                          //flag for checking if this is inside the pool
-        private bool shouldDecraseCountOnDestroy;       //flag for OnDisable/OnDestroy
+        private bool isInPool;               //flag for checking if this is inside the pool
+        private bool decrasePlayCountOnStop; //flag for OnDisable/OnDestroy
 
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-        }
-        private void Start()    //black magick, this is delayed when pooled.
-        {
-            if (isPrePlaced)      //not initialized until IPoolable.OnCreate
+
+            if (IsPrePlaced)
             {
-                bool flag = defaultAudioSO != null;
-                Debug.Assert(flag, "emitter is preplaced but defaultAudioSO is null", this);
-                Initialize(defaultAudioSO.GetAudio());
+                Initialize(defaultAudioSO);
             }
         }
         void IPoolable.OnCreate()
         {
             isInPool = true;
-            isPrePlaced = false;
         }
         void IPoolable.OnPop()
         {
             isInPool = false;
-            shouldDecraseCountOnDestroy = false;
+            decrasePlayCountOnStop = false;
         }
         void IPoolable.OnPush()
         {
             isInPool = true;
-            shouldDecraseCountOnDestroy = false;
+            decrasePlayCountOnStop = false;
 
-            OnEndCallback = null;
+            OnAudioPlayEnd = null;
             currentAudioSO = null;
         }
         internal static bool IsAudioPlayable(AudioSO audioSO, bool autoIncrement = false)
         {
-            if (!audioSO.enableMaxCount || true) return true; // TODO : this feature is disabled, NEED FIX
+            if (!audioSO.EnableMaxCount)
+            {
+                return true;
+            }
 
-            int hash = audioSO.clip.GetHashCode();
-            audioDictionary.TryGetValue(hash, out int count);
+            int hash = audioSO.Hash;
+            audioPlayCount.TryGetValue(hash, out int count);
 
-            bool result = count < audioSO.maxCount;
+            bool result = count < audioSO.MaxCount;
             if (result && autoIncrement)
             {
-                audioDictionary[hash] = ++count;
+                audioPlayCount[hash] = ++count;
             }
             return result;
         }
         private static void DecreaseDictionaryInstance(AudioSO audioSO)
         {
-            if (!audioSO.enableMaxCount || true) return; // TODO : this feature is disabled, NEED FIX
+            if (!audioSO.EnableMaxCount)
+            {
+                return;
+            }
 
-            int hash = audioSO.clip.GetHashCode();
-            int result = --audioDictionary[hash];
-            Debug.Assert(result >= 0, "yell at me ojy");
+            int hash = audioSO.Hash;
+            int result = --audioPlayCount[hash];
+            Debug.Assert(result >= 0);
         }
         public void Play(bool destroyOnEnd = false)
         {
-            if (isInPool) throw new InvalidOperationException("audio emitter is already killed");
-            if (!IsInitialized) throw new InvalidOperationException("playing without init");
-                
-            if (audioSource.isPlaying)
-                StopAudio();
+            if (isInPool)
+            {
+                throw new InvalidOperationException(k_instanceIsInPool);
+            }
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException(k_playWithoutInit);
+            }
 
             bool flagPlayable = IsAudioPlayable(currentAudioSO, true);
             if (!flagPlayable)
             {
-                Debug.LogWarning($"AudioInstance Reached Max {currentAudioSO.name}");
-                KillAudio();
+                Debug.LogWarning($"Audio Instance Reached Max capacity : {currentAudioSO.MaxCount} {currentAudioSO.name}", currentAudioSO);
+                if (!IsPrePlaced)
+                {
+                    KillAudio();
+                }
                 return;
             }
 
-            shouldDecraseCountOnDestroy = true;
+            decrasePlayCountOnStop = true;
 
             audioSource.Play();
             StartCoroutine(WaitUntilAudioEnd());
 
             IEnumerator WaitUntilAudioEnd()
             {
-                while (audioSource.isPlaying)
+                while (IsPlaying)
                 {
                     yield return null;
                 }
@@ -110,47 +118,42 @@ namespace Custom.Audio
                 OnAudioStop();
 
                 if (destroyOnEnd)
+                {
                     KillAudio();
+                }
             }
         }
-        public void PlayWithInitDefaultAudio(bool killOnEnd = false)
-        {
-            if (audioSource.isPlaying)
-                StopAudio();
-            Initialize(defaultAudioSO.GetAudio());
-            Play(killOnEnd);
-        }
-        public void PlayWithInit(BaseAudioSO audioSO, bool killOnEnd = false)
+        public void PlayWithInit(IAudio audioSO, bool destroyOnEnd = false)
         {
             AudioSO audio = audioSO.GetAudio();
 
-            if (audioSource.isPlaying) //can't initialize without stopping audio
+            if (IsPlaying) //can't initialize without stopping audio
+            {
                 StopAudio();
+            }
             Initialize(audio);
-            Play(killOnEnd);
+            Play(destroyOnEnd);
         }
-        /// <summary>
-        /// plays without checking
-        /// </summary>
         public void PlayOneShot()
         {
-            if (isInPool) throw new Exception("audio emitter is already killed");
-            if (!IsInitialized) throw new Exception("playing without init");
+            if (isInPool)
+            {
+                throw new InvalidOperationException(k_instanceIsInPool);
+            }
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException(k_playWithoutInit);
+            }
 
-            audioSource.PlayOneShot(currentAudioSO.clip, currentAudioSO.Volume);
+            audioSource.PlayOneShot(currentAudioSO.Clip, currentAudioSO.Volume);
         }
-        public void PlayOneShotWithInitDefaultAudio(bool killOnEnd = false)
-        {
-            if (audioSource.isPlaying)
-                StopAudio();
-            Initialize(defaultAudioSO.GetAudio());
-            PlayOneShot();
-        }
-        public void PlayOneShotWithInit(BaseAudioSO audioSO)
+        public void PlayOneShotWithInit(IAudio audioSO)
         {
             AudioSO audio = audioSO.GetAudio();
-            if (audioSource.isPlaying) //can't initialize without stopping audio
+            if (IsPlaying) //can't initialize without stopping audio
+            {
                 StopAudio();
+            }
             Initialize(audio);
             PlayOneShot();
         }
@@ -159,7 +162,10 @@ namespace Custom.Audio
         /// </summary>
         public void StopAudio()
         {
-            if (!audioSource.isPlaying) return;
+            if (!IsPlaying)
+            {
+                return;
+            }
 
             StopAllCoroutines();
 
@@ -173,31 +179,39 @@ namespace Custom.Audio
         /// <exception cref="InvalidOperationException">instance is already in pool</exception>
         public void KillAudio()
         {
-            if (isInPool) throw new InvalidOperationException("audio emitter is already killed");
+            if (isInPool)
+            {
+                throw new InvalidOperationException(k_instanceIsInPool);
+            }
 
             StopAudio();
             MonoGenericPool<AudioEmitter>.Push(this);   //deactivate gameObject, auto cancel Coroutine.
         }
-        public void Initialize(BaseAudioSO audioSO)
+        public void Initialize(IAudio audioSO)
         {
             AudioSO audio = audioSO.GetAudio();
 
-            if (audioSource.isPlaying)
+            if (IsPlaying)
             {
-                Debug.LogWarning($"n:{name}_initializing while playing audio");
+                Debug.LogWarning($"{name}_initializing while playing audio");
                 return;
             }
 
             currentAudioSO = audio;
 
             //global
-            audioSource.clip = audio.clip;
-            audioSource.outputAudioMixerGroup = audio.audioMixerGroup;
+            audioSource.clip = audio.Clip;
+            audioSource.outputAudioMixerGroup = audio.AudioMixerGroup;
 
             //preplaced settings
-            if(!overrideVolume)
+            if (!overrideVolume)
+            {
                 audioSource.volume = audio.Volume;
-            if (isPrePlaced) return;
+            }
+            if (IsPrePlaced)
+            {
+                return;
+            }
 
             audioSource.priority = audio.Priority;
             audioSource.pitch = audio.Pitch;
@@ -207,32 +221,33 @@ namespace Custom.Audio
 
             //3DSOUND SETTINGS
             audioSource.dopplerLevel = audio.DopplerLevel;
-            audioSource.spread = audio.spread;
-            audioSource.rolloffMode = audio.audioRolloffMode;
-            audioSource.minDistance = audio.minDistance;
-            audioSource.maxDistance = audio.maxDistance;
-            if (audio.audioRolloffMode == AudioRolloffMode.Custom)
-                audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, audio.curve);
+            audioSource.spread = audio.Spread;
+            audioSource.rolloffMode = audio.AudioRolloffMode;
+            audioSource.minDistance = audio.MinDistance;
+            audioSource.maxDistance = audio.MaxDistance;
+            if (audio.AudioRolloffMode == AudioRolloffMode.Custom)
+            {
+                audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, audio.RollOffCurve);
+            }
         }
-        /// <summary>
-        /// call this when audio is stopped
-        /// </summary>
-        /// <param name="decraseDictionaryInstance"></param>
         private void OnAudioStop()
         {
-            OnEndCallback?.Invoke();
-            if(shouldDecraseCountOnDestroy)
+            if (OnAudioPlayEnd != null)
+            {
+                OnAudioPlayEnd.Invoke();
+            }
+            if (decrasePlayCountOnStop)
+            {
                 DecreaseDictionaryInstance(currentAudioSO);
-            shouldDecraseCountOnDestroy = false;
+                decrasePlayCountOnStop = false;
+            }
         }
         private void OnDestroy()
         {
-            if (!isInPool)// && shouldDecraseCountOnDestroy)//remove shdcod
+            if (!isInPool)
             {
-                //print("destroy runtime aud" + audioSource.clip.name);
                 OnAudioStop();
             }
-
         }
     }
 }

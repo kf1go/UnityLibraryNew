@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11b10882b5285494c99afed604984eba, type: 3}
+  m_Name: AudioEmitterSO
+  m_EditorClassIdentifier: 
+  <PrewarmCount>k__BackingField: 0
+  <InitialPoolCapacity>k__BackingField: 16
+  <MaxCapacity>k__BackingField: 1000
+  <Prefab>k__BackingField: {fileID: 5259837670182907711, guid: 188885d8ea852474a8085076093a135f, type: 3}
+  <Hash>k__BackingField: 22900
+  mono: {fileID: 5154284543238614051, guid: 188885d8ea852474a8085076093a135f, type: 3}

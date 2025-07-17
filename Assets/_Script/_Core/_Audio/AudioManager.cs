@@ -23,29 +23,5 @@ namespace Custom.Audio
             AudioEmitter audioEmitter = MonoGenericPool<AudioEmitter>.Pop();
             return audioEmitter;
         }
-        public static AudioEmitter GetEmitter(BaseAudioSO baseAudio)
-        {
-            AudioSO audioSO = baseAudio.GetAudio();
-
-            AudioEmitter audioEmitter = MonoGenericPool<AudioEmitter>.Pop();
-            audioEmitter.Initialize(audioSO);
-            return audioEmitter;
-        }
-        public static AudioEmitter PlayWithInit(BaseAudioSO baseAudio, bool destroyOnEnd = false)
-        {
-            AudioSO audioSO = baseAudio.GetAudio();
-
-            Debug.Assert(audioSO != null, "audioSO is null");
-
-            AudioEmitter audioEmitter = GetEmitter();
-            audioEmitter.PlayWithInit(audioSO, destroyOnEnd);
-
-            return audioEmitter;
-        }
-        public static AudioEmitter PlayOneShotWithInit(AudioSO audioSO)
-        {
-            throw new NotImplementedException("no");
-        }
-
     }
 }
