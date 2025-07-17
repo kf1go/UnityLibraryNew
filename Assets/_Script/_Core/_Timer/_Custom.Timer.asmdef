@@ -1,5 +1,5 @@
 {
-    "name": "CustomTimer",
+    "name": "Custom.Timer",
     "rootNamespace": "",
     "references": [
         "GUID:a3ff4544b220b0f4b86cbdc9360b5150",
