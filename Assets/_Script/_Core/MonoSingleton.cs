@@ -37,6 +37,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour
 #if UNITY_EDITOR
         if (HasFlag(result.SingletonFlag, MonoSingletonFlags.DBG_DontAutoCreate))
         {
+            _instance = null;
             throw new InvalidOperationException("singleton is tagged as dont auto create");
         }
 #endif

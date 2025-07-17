@@ -23,17 +23,6 @@ public class GameObjectPoolDefine : MonoSingleton<GameObjectPoolDefine>
 
     [SerializeField] private PoolGameObjectSO[] _particleTypeCollection;
 
-    private static int GetEnumLength<EnumType>()
-        where EnumType : Enum
-    {
-        int result = GetEnumLength(typeof(EnumType));
-        return result;
-    }
-    private static int GetEnumLength(Type enumType)
-    {
-        int result = Enum.GetValues(enumType).Length;
-        return result;
-    }
     public void Initialize()
     {
         _poolGameObjectSO[(int)PoolGameObjectType.Particle] = MakeDictionary<ParticleType>(_particleTypeCollection);
@@ -51,6 +40,17 @@ public class GameObjectPoolDefine : MonoSingleton<GameObjectPoolDefine>
         {
             result[i] = InitPool(gameObjectCollection[i]);
         }
+        return result;
+    }
+    private static int GetEnumLength<EnumType>()
+        where EnumType : Enum
+    {
+        int result = GetEnumLength(typeof(EnumType));
+        return result;
+    }
+    private static int GetEnumLength(Type enumType)
+    {
+        int result = Enum.GetValues(enumType).Length;
         return result;
     }
     private static PoolGameObjectSO InitPool(PoolGameObjectSO poolGameObjectSO)
