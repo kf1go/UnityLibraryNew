@@ -3,59 +3,69 @@ using System.Collections.Generic;
 using Custom.Pool;
 using UnityEngine;
 
-public enum PoolGameObjectType
+public enum EPoolGameObjectType
 {
+    //Particle
     Particle,
-    Idk,
+    ParticleBullet,
 }
-public enum ParticleType
+public enum EParticleType
+{
+    Explosion
+}
+public enum EParticleBulletType
 {
     Metal,
-    Explosion,
-    Wood
+    Blood,
+    Blood_HS
 }
 
 public class GameObjectPoolDefine : MonoSingleton<GameObjectPoolDefine>
 {
     protected override MonoSingletonFlags SingletonFlag => MonoSingletonFlags.DontDestroyOnLoad | MonoSingletonFlags.DBG_DontAutoCreate;
-    public IReadOnlyDictionary<int, PoolGameObjectSO>[] GetPool => _poolGameObjectSO;
-    private Dictionary<int, PoolGameObjectSO>[] _poolGameObjectSO = new Dictionary<int, PoolGameObjectSO>[GetEnumLength<ParticleType>()];
+    public static IReadOnlyDictionary<int, PoolGameObjectSO>[] GetPool => poolGameObjectSO;
+    private static readonly Dictionary<int, PoolGameObjectSO>[] poolGameObjectSO = new Dictionary<int, PoolGameObjectSO>[GetEnumLength<EPoolGameObjectType>()];
 
-    [SerializeField] private PoolGameObjectSO[] _particleTypeCollection;
+    [SerializeField] private PoolGameObjectSO[] particleTypeCollection;
+    [SerializeField] private PoolGameObjectSO[] particleBulletCollection;
 
+    protected override void Awake()
+    {
+        base.Awake();
+        Initialize();
+    }
     public void Initialize()
     {
-        _poolGameObjectSO[(int)PoolGameObjectType.Particle] = MakeDictionary<ParticleType>(_particleTypeCollection);
-    }
-    public IReadOnlyDictionary<int, PoolGameObjectSO> GetPoolGameObjectDictionary(PoolGameObjectType poolGameObjectType)
-    {
-        return _poolGameObjectSO[(int)poolGameObjectType];
-    }
-    private static Dictionary<int, PoolGameObjectSO> MakeDictionary<EnumType>(PoolGameObjectSO[] gameObjectCollection)
-        where EnumType : Enum
-    {
-        int maxEnumLength = GetEnumLength<EnumType>();
-        Dictionary<int, PoolGameObjectSO> result = new Dictionary<int, PoolGameObjectSO>(maxEnumLength);
-        for (int i = 0; i < maxEnumLength; i++)
+        poolGameObjectSO[(int)EPoolGameObjectType.Particle] = MakeDictionary<EParticleType>(particleTypeCollection);
+        poolGameObjectSO[(int)EPoolGameObjectType.ParticleBullet] = MakeDictionary<EParticleBulletType>(particleBulletCollection);
+
+        return;
+
+        static Dictionary<int, PoolGameObjectSO> MakeDictionary<EnumType>(PoolGameObjectSO[] gameObjectCollection)
+            where EnumType : Enum
         {
-            result[i] = InitPool(gameObjectCollection[i]);
+            int maxEnumLength = GetEnumLength<EnumType>();
+            
+            Dictionary<int, PoolGameObjectSO> result = new Dictionary<int, PoolGameObjectSO>(maxEnumLength);
+            for (int i = 0; i < maxEnumLength; i++)
+            {
+                PoolGameObjectSO item = gameObjectCollection[i];
+                GameObjectPoolManager.InitializePool(item);
+                result[i] = item;
+            }
+
+            return result;
         }
+    }
+    public static IReadOnlyDictionary<int, PoolGameObjectSO> GetPoolGameObjectDictionary(EPoolGameObjectType poolGameObjectType)
+    {
+        Dictionary<int, PoolGameObjectSO> result = poolGameObjectSO[(int)poolGameObjectType];
         return result;
     }
     private static int GetEnumLength<EnumType>()
         where EnumType : Enum
     {
-        int result = GetEnumLength(typeof(EnumType));
+        int result = Enum.GetValues(typeof(EnumType)).Length;
         return result;
-    }
-    private static int GetEnumLength(Type enumType)
-    {
-        int result = Enum.GetValues(enumType).Length;
-        return result;
-    }
-    private static PoolGameObjectSO InitPool(PoolGameObjectSO poolGameObjectSO)
-    {
-        GameObjectPoolManager.InitializePool(poolGameObjectSO);
-        return poolGameObjectSO;
     }
 }
