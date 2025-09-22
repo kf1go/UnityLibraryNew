@@ -2,20 +2,19 @@ using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(-100)]
-public abstract class MonoSingleton<T> : MonoBehaviour 
+public abstract class MonoSingleton<T> : MonoBehaviour
     where T : MonoSingleton<T>
 {
-    protected virtual MonoSingletonFlags SingletonFlag { get; } // consider using attribute to get flags from static scope
-    private static T _instance = null;
+    protected virtual MonoSingletonFlags SingletonFlag { get; } // consider using attribute to get flags in static scope
+    private static bool isPlayerClosing;
 
-    private static bool IsPlayerClosing { get; set; }
     public static T Instance
     {
         get
         {
             if (System.Object.ReferenceEquals(_instance, null)) //using C# null check
             {
-                if (IsPlayerClosing)
+                if (isPlayerClosing)
                 {
                     return null;
                 }
@@ -25,28 +24,22 @@ public abstract class MonoSingleton<T> : MonoBehaviour
             return _instance;
         }
     }
-    private static T RuntimeInitialize()
-    {
-        string singletonMessage = string.Empty; 
-#if UNITY_EDITOR
-        singletonMessage = "Runtime_Singleton" + typeof(T).Name;
-#endif
-        GameObject gameObject = new GameObject(name: singletonMessage);
-        T result = gameObject.AddComponent<T>();
+    private static T _instance = null;
 
 #if UNITY_EDITOR
-        if (HasFlag(result.SingletonFlag, MonoSingletonFlags.DBG_DontAutoCreate))
+    private bool flag_AwakeDone;
+#endif
+
+    protected virtual void Awake()
+    {
+#if UNITY_EDITOR
+        if (flag_AwakeDone)
         {
-            _instance = null;
-            throw new InvalidOperationException("singleton is tagged as dont auto create");
+            Debug.LogError("calling awake in different scope", gameObject);
+            return;
         }
 #endif
 
-        Debug.LogWarning(singletonMessage, gameObject);
-        return result;
-    }
-    protected virtual void Awake()
-    {
         //check two singleton error
         if (!System.Object.ReferenceEquals(_instance, null)) //using System.Object null check
         {
@@ -60,19 +53,17 @@ public abstract class MonoSingleton<T> : MonoBehaviour
         {
             DontDestroyOnLoad(gameObject);
         }
+#if UNITY_EDITOR
         if (HasFlag(SingletonFlag, MonoSingletonFlags.Hide))
         {
             gameObject.hideFlags = HideFlags.HideInHierarchy;
         }
 
-#if UNITY_EDITOR
         Debug.Log($"[Singleton_Awake] [type : {typeof(T).Name}] [name : {gameObject.name}]");
+        flag_AwakeDone = true;
 #endif
+
         _instance = (T)this;
-    }
-    private static bool HasFlag(MonoSingletonFlags flag, MonoSingletonFlags target)
-    {
-        return (flag & target) > 0;
     }
     protected virtual void OnDestroy()
     {
@@ -83,6 +74,32 @@ public abstract class MonoSingleton<T> : MonoBehaviour
     }
     protected virtual void OnApplicationQuit()
     {
-        IsPlayerClosing = true;
+        isPlayerClosing = true;
+    }
+    private static T RuntimeInitialize()
+    {
+        GameObject gameObject = new GameObject();
+        T result = gameObject.AddComponent<T>();
+
+#if UNITY_EDITOR
+        string singletonMessage = "Runtime_Singleton" + typeof(T).Name;
+        gameObject.name = singletonMessage;
+
+        if (HasFlag(result.SingletonFlag, MonoSingletonFlags.DBG_DontAutoCreate))
+        {
+            _instance = null;
+            throw new InvalidOperationException("singleton is tagged as dont auto create");
+        }
+        else
+        {
+            Debug.LogWarning(singletonMessage, gameObject);
+        }
+#endif
+
+        return result;
+    }
+    private static bool HasFlag(MonoSingletonFlags flag, MonoSingletonFlags target)
+    {
+        return (flag & target) > 0;
     }
 }
