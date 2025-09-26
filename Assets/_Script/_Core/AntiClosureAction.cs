@@ -7,7 +7,6 @@ public struct AntiClosureAction<Argument>
     private readonly Argument _arg;
     private Action<Argument> _callback;
     public bool HasValue { get; private set; }
-    public bool IsUnityObjectDead => _arg == null;
     public AntiClosureAction(Argument arg, Action<Argument> callback)
     {
         if (callback == null)
@@ -32,7 +31,6 @@ public struct AntiClosureAction<Argument, Arg1>
     private readonly Argument _arg;
     private Action<Argument, Arg1> _callback;
     public bool HasValue { get; private set; }
-    public bool IsUnityObjectDead => _arg == null;
     public AntiClosureAction(Argument arg, Action<Argument, Arg1> callback)
     {
         if (callback == null)
@@ -57,7 +55,6 @@ public struct AntiClosureAction<Argument, Arg1, Arg2>
     private readonly Argument _arg;
     private Action<Argument, Arg1, Arg2> _callback;
     public bool HasValue { get; private set; }
-    public bool IsUnityObjectDead => _arg == null;
     public AntiClosureAction(Argument arg, Action<Argument, Arg1, Arg2> callback)
     {
         if (callback == null)
@@ -82,7 +79,6 @@ public struct AntiClosureAction<Argument, Arg1, Arg2, Arg3>
     private readonly Argument _arg;
     private Action<Argument, Arg1, Arg2, Arg3> _callback;
     public bool HasValue { get; private set; }
-    public bool IsUnityObjectDead => _arg == null;
     public AntiClosureAction(Argument arg, Action<Argument, Arg1, Arg2, Arg3> callback)
     {
         if (callback == null)
